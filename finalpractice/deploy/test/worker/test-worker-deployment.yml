@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kz-test-worker-deployment
+  labels:
+    app: kz-test-worker
+    username: kz
+    env: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kz-test-worker
+  template:
+    metadata:
+      labels:
+        app: kz-test-worker
+        username: kz
+        env: test
+    spec:
+      containers:
+        - name: kz-test-worker
+          imagePullPolicy: Always
+          image: kchristian1/testing-final_2-wrk:1.0
+          #command: ["sleep","9999"]
+          command: ["python", "worker.py"]
+          env:
+          - name: WORKER_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: REDIS_IP
+            value: "10.111.115.155"          

@@ -1,0 +1,29 @@
+version: "3.5"
+
+networks:
+    final_project:
+        driver: bridge
+
+services:
+    redis:
+        image: redis
+        networks:
+            - final_project
+        ports:
+            - 6386:6379
+    flask:
+        image: kchristian1/testing-final_2-api:1.0
+        command: "/app/api.py"
+        ports:
+            - 5006:5000
+        environment:
+            REDIS_IP: "redis"
+        networks:
+            - final_project
+    worker:
+        image: kchristian1/testing-final_2-wrk:1.0
+        command: "/app/worker.py"
+        environment:
+            REDIS_IP: "redis"
+        networks:
+            - final_project

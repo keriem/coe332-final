@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kz-test-flask-service
+  labels:
+    username: kz
+    env: test
+spec:
+  type: ClusterIP
+  selector:
+    app: kz-test-flask
+  ports:
+  - name: kz-test-flask-service
+    port: 5000
+    targetPort: 5000 

@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kz-test-pvc-deployment
+  labels:
+    app: kz-test-redis
+    username: kz
+    env: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kz-test-redis
+  template:
+    metadata:
+      labels:
+        app: kz-test-redis
+        username: kz
+        env: test
+    spec:
+      containers:
+        - name: kz-test-api
+          imagePullPolicy: Always
+          image: redis:5.0.0
+          volumeMounts:
+          - name: kz-test-pvc-data
+            mountPath: "/data"
+      volumes:
+      - name: kz-test-pvc-data
+        persistentVolumeClaim:
+          claimName: kz-test-pvc-data
