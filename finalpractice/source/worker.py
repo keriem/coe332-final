@@ -18,9 +18,9 @@ def execute_job(jid):
     
     if(job_type=='create'):
         data = jobs.get_job_data(jid)
-        result = jobs.add_animal(jid,data)   
-        rd2.hmset(jid,result)
-
+        jobs.add_animal(jid,data)   
+        
+             
     jobs.update_job_status(jid, 'complete')
 
 execute_job()

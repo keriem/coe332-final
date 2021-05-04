@@ -80,7 +80,10 @@ def get_id_animal():
     return json.dumps([x for x in test if x['Animal_ID'] == "'"+animalid+"'"])
     
 
-
+#@app.route('/get_results',methods=['GET'])
+#def get_result():
+#    jid = str(request.args.get('Job_ID'))
+#    return json.dumps(jobs.get_result(jid))
 
 @app.route('/jobs', methods=['POST'])
 def jobs_api():
@@ -88,7 +91,7 @@ def jobs_api():
         job = request.get_json(force=True)
     except Exception as e:
         return True, json.dumps({'status': "Error", 'message': 'Invalid JSON: {}.'.format(e)})
-    return json.dumps(jobs.add_job(job['job_type'], job['data'],job['results']))
+    return json.dumps(jobs.add_job(job['job_type'], str(job['data'])))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

@@ -5,6 +5,7 @@ import redis
 import os 
 from random import randint 
 import datetime
+import json
 
 redis_ip = "10.111.115.155"#os.environ.get('REDIS_IP')
 #if not redis_ip:
@@ -14,6 +15,8 @@ q = HotQueue("queue", host=redis_ip, port=6379, db=1)
 rd = redis.StrictRedis(host=redis_ip, port=6379, db=0)
 #results_of_all=[]
 #index = 0
+rd2=redis.StrictRedis(host=redis_ip, port=6379, db=2)
+
 
 def _get_data():
     animal_data = []
@@ -69,7 +72,8 @@ def _queue_job(jid):
 
 def add_job(job_type,data, status="submitted"):
     jid = _generate_jid()
-    job_dict = _instantiate_job(jid, status, job_type, status)
+    data = json.loads(data)
+    job_dict = _instantiate_job(jid, status, job_type, data)
     _save_job(_generate_job_key(jid), job_dict)
     _queue_job(jid)
     #index = index +1
@@ -89,7 +93,7 @@ def add_animal(jid,data):
     #while true:
     range_start = 10**(6-1)
     range_end = (10**6)-1
-    animal_id = 'A'+ str(randint(range_start, range_end))
+    animal_id = "'A'"+ str(randint(range_start, range_end))
      #   if([x for x in test if x['Animal_ID'] == animal_id]=='[]'):
       #      break
     name = data['Name']
@@ -106,9 +110,11 @@ def add_animal(jid,data):
     color = data['Color']
 
     rd1.hmset(rd1.dbsize(),{'Animal_ID':animal_id,'Name':name,'Date_of_Entry':date_entry,'Date_of_Birth':date_of_birth,'Outcome_Type':outcome_type,'Outcome_Subtype':outcome_subtype,'Animal_Type':animal_type,'Sex':sex,'Age':age,'Breed':breed,'Color':color})
-    
-    return (rd1.hget(rd1.dbsize()))
+    jid, status, job_type, data = rd.hmget(generate_job_key(jid), 'id', 'status', 'job_type', 'data')
+    rd2.hmset(generate_job_key(jid),{'id': jid, 'status':status, 'job_type':job_type, 'result':rd1.hget(rd1.dbsize())})
 
+def get_result(jid):
+    return rd2.hget(generate_job_key(jid))
 
 def update_job_status(jid, new_status):
     
