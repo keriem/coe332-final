@@ -22,8 +22,8 @@ spec:
         - name: kz-test-api
           imagePullPolicy: Always
           image: kchristian1/testing-final_2-api:1.0
-          command: ["sleep", "99999999999999999999999999999999"]
-          #command: ["python", "api.py"]
+          #command: ["sleep", "99999999999999999999999999999999"]
+          command: ["python", "api.py"]
           env:
           - name: FLASK_APP
             value: "api.py"
