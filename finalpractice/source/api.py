@@ -4,7 +4,7 @@ from flask import Flask, request
 from hotqueue import HotQueue
 import redis
 import jobs
-from jobs import q,rd1
+from jobs import q,rd1,rd
 import os
 import uuid
 import datetime
@@ -58,7 +58,7 @@ def load_data():
 def get_data():
     animal_data = []
     #rd1 = redis.StrictRedis(host = redis_ip,port=6379,db=3)
-    for i in range(2269):
+    for i in range(rd1.dbsize()-1):
         animal = {}
         animal['Animal_ID'] = str(rd1.hget(i,'Animal_ID'))[1:]
         animal['Name'] = str(rd1.hget(i,'Name'))[1:]
@@ -119,6 +119,54 @@ def add_animal():
 }
 
 """
+
+# need an update route
+@app.route('/update_animal', methods=['GET', 'POST'])
+def update_animal():
+    if request.method == 'POST':
+        animalid = str(request.args.get('Animal_ID'))
+        animaltype = str(request.args.get('Animal_Type')).replace('"','')
+        test = get_data()
+        animal = [x for x in test if x['Animal_ID'] == animalid]        
+        rd1.hset(test.index(animal[0]),'Animal_Type',animaltype)
+        #field_to_update = request.form['Field_to_Update']
+        #for k in request.args.keys():
+        #    if k != "'Animal_ID'":
+        #        field_to_update = k
+        #        value_to_update = str(request.args.get(field_to_update)).replace("'","")
+        #value_to_update = request.form['Value_to_Update']
+        #        for key in rd1.keys():
+        #            if rd1.hget(key, 'Animal_ID') == animalid:
+        #                rd1.hset(key, field_to_update, value_to_update)
+        return "You have edited animal "+animalid    
+
+    else:
+        return """
+
+    Try a curl command like:
+
+    curl -X POST "localhost:5000/update_animal?Animal_ID='A643424'&Animal_Type='Dog'"
+
+
+"""
+# need a delete route
+@app.route('/delete_animal', methods=['DELETE'])
+def delete_animal():
+    if request.method == 'DELETE':
+        animalid = request.args.get('Animal_ID')
+        test = get_data()
+        animal = [x for x in test if x['Animal_ID'] == "'"+animalid+"'"]
+        rd1.delete(test.index(animal[0]))
+        return "You have deleted animal "+animalid
+
+
+@app.route('/download/<jobid>', methods=['GET'])
+def download(jobid):
+    path = f'/app/{jobid}.png'
+    with open(path, 'wb') as f:
+        f.write(rd.hget(jobid, 'image'))
+    return send_file(path, mimetype='image/png', as_attachment=True)
+
 
 @app.route('/jobs', methods=['POST'])
 def jobs_api():
