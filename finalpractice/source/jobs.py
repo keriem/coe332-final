@@ -89,7 +89,13 @@ def get_job_data(jid):
     job_dict = _instantiate_job(jid, status, job_type, start, end)
     return job_dict
 
+def get_job_start(jid):
+    jid, status, job_type, start, end = rd.hmget(_generate_job_key(jid), 'id', 'status', 'job_type', 'start', 'end')
+    return (str(start)[1:]).replace("'","")
 
+def get_job_end(jid):
+    jid, status, job_type, start, end = rd.hmget(_generate_job_key(jid), 'id', 'status', 'job_type', 'start', 'end')
+    return (str(end)[1:]).replace("'","")
 
 def update_job_status(jid, new_status):
     jid, status, job_type, start, end = rd.hmget(_generate_job_key(jid), 'id', 'status', 'job_type', 'start', 'end') 

@@ -1,6 +1,6 @@
 
 import json
-from flask import Flask, request
+from flask import Flask, request, send_file
 from hotqueue import HotQueue
 import redis
 import jobs
@@ -120,35 +120,43 @@ def add_animal():
 
 """
 
-# need an update route
+# UPDATE route
 @app.route('/update_animal', methods=['GET', 'POST'])
 def update_animal():
     if request.method == 'POST':
+        #get Animal_ID, the only required query parameter
         animalid = str(request.args.get('Animal_ID'))
-        animaltype = str(request.args.get('Animal_Type')).replace('"','')
-        test = get_data()
-        animal = [x for x in test if x['Animal_ID'] == animalid]        
-        rd1.hset(test.index(animal[0]),'Animal_Type',animaltype)
-        #field_to_update = request.form['Field_to_Update']
-        #for k in request.args.keys():
-        #    if k != "'Animal_ID'":
-        #        field_to_update = k
-        #        value_to_update = str(request.args.get(field_to_update)).replace("'","")
-        #value_to_update = request.form['Value_to_Update']
-        #        for key in rd1.keys():
-        #            if rd1.hget(key, 'Animal_ID') == animalid:
-        #                rd1.hset(key, field_to_update, value_to_update)
-        return "You have edited animal "+animalid    
+        #raise exception if user does not provide Animal_ID
+        if not animalid:
+            raise Exception('Animal_ID must be one of the query parameters')
+        #iterate over all keys in raw data db
+        for key in rd1.keys():
+            #return "checking for animal id match"
+            #find animal that matches the Animal_ID parameter
+            if str(rd1.hget(key, 'Animal_ID'))[1:] == "'"+animalid+"'":
+                #return "found animal match"                
+                #iterate over all field:value pairs passed in the query string
+                for field, value in request.args.items():
+                    
+                    #skip the Animal_ID field
+                    if field == 'Animal_ID':
+                        pass
+                    #update the database for any other field that is passed in the query 
+                    else:
+                        rd1.hset(key, field, value)
+                return "You have edited animal "+animalid
+        else:
+            return "cannot find animal"
 
     else:
         return """
-
     Try a curl command like:
-
     curl -X POST "localhost:5000/update_animal?Animal_ID='A643424'&Animal_Type='Dog'"
-
-
 """
+
+
+
+
 # need a delete route
 @app.route('/delete_animal', methods=['DELETE'])
 def delete_animal():
